@@ -23,16 +23,6 @@ static node *new_node(int key, node *next) {
     return n;
 }
 
-// Find where key k belongs.
-static void locate(list *l, int k, node **pred, node **curr) {
-    *pred = l->head;
-    *curr = l->head->next;
-    while ((*curr)->key < k) {
-        *pred = *curr;
-        *curr = (*curr)->next;
-    }
-}
-
 // Create a new empty list with sentinel nodes.
 void *gl_new(void) {
     list *l = malloc(sizeof(list));
@@ -46,7 +36,7 @@ void *gl_new(void) {
 void gl_free(void *lp) {
     list *l = lp;
     node *next;
-    
+
     for (node *n = l->head; n; n = next) {
         next = n->next;
         free(n);
@@ -55,3 +45,53 @@ void gl_free(void *lp) {
     free(l);
 }
 
+int gl_find(void *lp, int k) {
+    list *l = lp;
+    pthread_mutex_lock(&l->lock);
+
+    node *curr = l->head;
+    while(curr->key < k)
+        curr = curr->next;
+    int found = (curr->key == k);
+
+    pthread_mutex_unlock(&l->lock);
+    return found;
+}
+
+int gl_insert(void *lp, int k) {
+    list *l = lp;
+    pthread_mutex_lock(&l->lock);
+
+    node *pred = l->head;
+    node *curr = pred->next;
+    while (curr->key < k) {
+        pred = curr;
+        curr = curr->next;
+    }
+    int found = (curr->key == k);
+    if (!found)
+        pred->next = new_node(k, curr);
+
+    pthread_mutex_unlock(&l->lock);
+    return !found;
+}
+
+int gl_delete(void *lp, int k) {
+    list *l = lp;
+    pthread_mutex_lock(&l->lock);
+    
+    node *pred = l->head;
+    node *curr = pred->next;
+    while (curr->key < k) {
+        pred = curr;
+        curr = curr->next;
+    }
+    int found = (curr->key == k);
+    if (found) {
+        pred->next = curr->next;
+        free(curr);
+    }
+
+    pthread_mutex_unlock(&l->lock);
+    return found;
+}
