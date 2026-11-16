@@ -1,0 +1,15 @@
+threads,list,ops_per_sec
+1,global,2857842
+1,hoh,1214439
+2,global,1589084
+2,hoh,368116
+4,global,782636
+4,hoh,501496
+8,global,779307
+8,hoh,277087
+16,global,945024
+16,hoh,257636
+32,global,1010307
+32,hoh,252432
+64,global,1030151
+64,hoh,249303
